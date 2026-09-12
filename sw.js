@@ -1,21 +1,10 @@
-/* Service Worker — BLOCK PUZZLE EXTREME (c) 2026 enkes_project */
-const CACHE_NAME = 'bpe-cache-v3';
-const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
-const AUDIO = [
-  'https://res.cloudinary.com/sogbouii/video/upload/v1789150308/Effect_Kemenangan_Setiap_Level.mp3',
-  'https://res.cloudinary.com/sogbouii/video/upload/v1788965435/congratulations-Level_success.mp3',
-  'https://res.cloudinary.com/sogbouii/video/upload/v1788965434/amazing-Pecah_2_baris_ke_atas.mp3',
-  'https://res.cloudinary.com/sogbouii/video/upload/v1789150310/Effect_Naik_Level.wav',
-  'https://res.cloudinary.com/sogbouii/video/upload/v1789150308/Effect_Ledakan.mp3',
-  'https://res.cloudinary.com/sogbouii/video/upload/v1788965436/no-way-Pecah_1_baris.mp3',
-  'https://res.cloudinary.com/sogbouii/video/upload/v1788837529/Block_Drop_Bounce_1.mp3',
-  'https://res.cloudinary.com/sogbouii/video/upload/v1788837529/Block_Drop_Bounce.mp3',
-];
+const CACHE = 'bpe-cache-v2';
+const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(c => c.addAll(CORE))
+    caches.open(CACHE)
+      .then(c => Promise.allSettled(ASSETS.map(a => c.add(a))))
       .then(() => self.skipWaiting())
   );
 });
@@ -23,26 +12,26 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
+      .then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
-/* Strategi: cache-first untuk semua; audio dicache saat pertama dipakai */
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (url.origin !== location.origin) return; // audio Cloudinary tidak di-cache
   e.respondWith(
-    caches.match(req).then(hit =>
-      hit ||
-      fetch(req).then(res => {
-        const copy = res.clone();
-        const okCache = req.url.startsWith(self.location.origin) || AUDIO.some(u => req.url.startsWith(u.split('/video/upload')[0]) && req.url.includes('cloudinary'));
-        if (res.ok && okCache) {
-          caches.open(CACHE_NAME).then(c => c.put(req, copy));
+    caches.match(req, { ignoreSearch: true }).then(hit => {
+      if (hit) return hit;
+      return fetch(req).then(res => {
+        if (res && res.ok) {
+          const cp = res.clone();
+          caches.open(CACHE).then(c => c.put(req, cp)).catch(() => {});
         }
         return res;
-      }).catch(() => caches.match('./index.html'))
-    )
+      }).catch(() => caches.match('./index.html'));
+    })
   );
 });
