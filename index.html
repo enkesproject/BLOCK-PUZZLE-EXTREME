@@ -120,7 +120,6 @@ body::after{content:'';position:fixed;inset:-12px;pointer-events:none;z-index:90
   transition:.25s;flex:none;touch-action:manipulation}
 .iconBtn:hover{background:rgba(201,165,78,.24);border-color:rgba(201,165,78,.85)}
 .iconBtn:active{transform:scale(.93)}
-.iconBtn.active{background:rgba(201,165,78,.3);border-color:#d9b45b;color:#f5e6b8}
 .iconBtn svg{width:16px;height:16px}
 #sndBtn .x,#sndBtn2 .x,#sndBtn3 .x{display:none}
 #sndBtn.muted .w,#sndBtn2.muted .w,#sndBtn3.muted .w{display:none}
@@ -245,18 +244,6 @@ body::after{content:'';position:fixed;inset:-12px;pointer-events:none;z-index:90
         <svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>
       </button>
       <div class="spacer"></div>
-      <button id="fsBtn" class="iconBtn" aria-label="Fullscreen">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <g class="fs-open">
-            <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/>
-            <path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
-          </g>
-          <g class="fs-close" style="display:none">
-            <path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/>
-            <path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/>
-          </g>
-        </svg>
-      </button>
       <button id="sndBtnWrap" class="iconBtn" aria-label="Sound">
         <svg id="sndBtn2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
           <path d="M11 5 6 9H2v6h4l5 4V5z"/><path class="w" d="M15.5 8.5a5 5 0 0 1 0 7"/><path class="w" d="M18.5 5.5a9.5 9.5 0 0 1 0 13"/>
@@ -1439,7 +1426,7 @@ function toggleSound(){
   updSndIcons();
 }
 
-/* ============ FULLSCREEN — HILANGKAN URL BAR CHROME ============ */
+/* ============ FULLSCREEN OTOMATIS — SEKALI SENTUH LANGSUNG PENUH ============ */
 const fsEl=()=>document.fullscreenElement||document.webkitFullscreenElement||document.mozFullScreenElement;
 const inIframe=()=>{try{return window.self!==window.top;}catch(_){return true;}};
 const isTouch=(window.matchMedia&&matchMedia('(pointer:coarse)').matches)||('ontouchstart'in window);
@@ -1490,26 +1477,13 @@ function reqFS(){
   if(fsEl())return;
   fsAttempt();
 }
-function exitFS(){
-  const fn=document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen;
-  if(fn&&fsEl()){fsSuppress=true;try{fn.call(document);}catch(_){}}
-}
-function updFSIcon(){
-  const on=!!fsEl(),b=$('#fsBtn');
-  if(!b)return;
-  b.querySelector('.fs-open').style.display=on?'none':'';
-  b.querySelector('.fs-close').style.display=on?'':'none';
-  b.classList.toggle('active',on);
-  setTimeout(layout,150);setTimeout(layout,450);
-}
-document.addEventListener('fullscreenchange',updFSIcon);
-document.addEventListener('webkitfullscreenchange',updFSIcon);
-/* PEMICU UTAMA: sentuhan APAPUN → langsung layar penuh */
+document.addEventListener('fullscreenchange',()=>{setTimeout(layout,150);setTimeout(layout,450);});
+document.addEventListener('webkitfullscreenchange',()=>{setTimeout(layout,150);setTimeout(layout,450);});
+/* PEMICU: sentuhan APAPUN (papan, tray, tombol apapun) → langsung layar penuh */
 ['pointerdown','touchend'].forEach(ev=>{
-  document.addEventListener(ev,e=>{
+  document.addEventListener(ev,()=>{
     if(!isTouch)return;
     if(fsSuppress){fsSuppress=false;return;}
-    if(e.target&&e.target.closest&&e.target.closest('#fsBtn'))return;
     if(fsEl())return;
     reqFS();
   },{passive:true,capture:true});
@@ -1521,7 +1495,6 @@ if(inIframe()||!fsAllowed())
  $('#menuSnd').addEventListener('click',toggleSound);
  $('#sndBtnWrap').addEventListener('click',toggleSound);
  $('#pauseSnd').addEventListener('click',toggleSound);
- $('#fsBtn').addEventListener('click',()=>{initAudio();sndClick();if(fsEl())exitFS();else reqFS();});
  $('#homeBtn').addEventListener('click',()=>{initAudio();sndClick();drag=null;paused=false;toMenu();});
  $('#pauseBtn').addEventListener('click',()=>{initAudio();sndClick();pauseGame();});
  $('#resumeBtn').addEventListener('click',()=>{sndClick();resumeGame();});
@@ -1660,4 +1633,4 @@ updSndIcons();buildMenu();requestAnimationFrame(frame);
 })();
 </script>
 </body>
-          </html>
+                                                </html>
