@@ -1,5 +1,5 @@
 /* Service Worker — BLOCK PUZZLE EXTREME (c) 2026 enkes_project */
-const CACHE_NAME = 'bpe-cache-v1';
+const CACHE_NAME = 'bpe-cache-v3';
 const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 const AUDIO = [
   'https://res.cloudinary.com/sogbouii/video/upload/v1789150308/Effect_Kemenangan_Setiap_Level.mp3',
