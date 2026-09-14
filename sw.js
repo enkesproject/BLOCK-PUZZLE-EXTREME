@@ -1,5 +1,5 @@
-const CACHE = 'bpe-cache-v4';
-const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const CACHE = 'bpe-cache-v5';
+const ASSETS = ['./', './index.html', './manifest.json', './icon-192.jpg', './icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
