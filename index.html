@@ -591,6 +591,7 @@ function drawMenuBlocks(t){
 }
 
 let AC=null,master=null,noiseBuf=null,muted=false;
+let adOn=false;
 const sfxPool={},extBuf={};
 function ensureAC(){
   if(AC)return;
@@ -674,7 +675,7 @@ bgmTracks.forEach((a,i)=>{
   });
 });
 function bgmStart(){
-  if(bgmActive||muted||!bgmTracks.length)return;
+  if(adOn||bgmActive||muted||!bgmTracks.length)return;
   bgmActive=true;
   const a=bgmTracks[bgmIdx];
   a.currentTime=0;
@@ -682,7 +683,7 @@ function bgmStart(){
 }
 function bgmPause(){bgmActive=false;bgmTracks.forEach(a=>a.pause());}
 function bgmResume(){
-  if(bgmActive||muted||!bgmTracks.length)return;
+  if(adOn||bgmActive||muted||!bgmTracks.length)return;
   bgmActive=true;
   bgmTracks[bgmIdx].play().catch(()=>{bgmActive=false;});
 }
@@ -906,18 +907,19 @@ function startLevel(n){
       type:'next',
       name:'level-'+n,
       beforeAd:function(){
-        paused=true;
-        if(master)master.gain.value=0;
-        try{bgmPause();}catch(e){}
-      },
-      afterAd:function(){
-        paused=false;
-        if(!wasMuted){
-          if(master)master.gain.value=0.5;
-          try{bgmResume();}catch(e){}
-        }
-      }
-    });
+  adOn=true;
+  paused=true;
+  try{bgmPause();}catch(e){}
+  try{if(AC)AC.suspend();}catch(e){}
+},
+afterAd:function(){
+  adOn=false;
+  paused=false;
+  try{if(AC)AC.resume();}catch(e){}
+  if(master)master.gain.value=muted?0:0.5;
+  if(!muted){try{bgmResume();}catch(e){}}
+  }
+  });
   }
 }
 function toMenu(){
