@@ -908,6 +908,7 @@ function startLevel(n){
       name:'level-'+n,
       beforeAd:function(){
   adOn=true;
+  alert('beforeAd jalan');
   paused=true;
   try{bgmPause();}catch(e){}
   try{if(AC)AC.suspend();}catch(e){}
