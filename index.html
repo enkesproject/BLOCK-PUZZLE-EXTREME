@@ -900,14 +900,25 @@ function startLevel(n){
   announce('LEVEL '+n,'TARGET · '+fmt(goal));
   if(fresh.length)setTimeout(()=>announce('NEW BLOCK!',fresh.join(' · ')+' UNLOCKED'),1500);
   sndLevelUp();
-    if(n>1){
+      if(n>1){
+    var wasMuted=muted;
     adBreak({
       type:'next',
       name:'level-'+n,
-      beforeAd:function(){ paused=true; },
-      afterAd:function(){ paused=false; }
+      beforeAd:function(){
+        paused=true;
+        if(master)master.gain.value=0;
+        try{bgmPause();}catch(e){}
+      },
+      afterAd:function(){
+        paused=false;
+        if(!wasMuted){
+          if(master)master.gain.value=0.5;
+          try{bgmResume();}catch(e){}
+        }
+      }
     });
-     }
+  }
 }
 function toMenu(){
   if(winTimer){clearTimeout(winTimer);winTimer=0;}
