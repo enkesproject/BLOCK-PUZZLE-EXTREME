@@ -900,6 +900,14 @@ function startLevel(n){
   announce('LEVEL '+n,'TARGET · '+fmt(goal));
   if(fresh.length)setTimeout(()=>announce('NEW BLOCK!',fresh.join(' · ')+' UNLOCKED'),1500);
   sndLevelUp();
+    if(n>1){
+    adBreak({
+      type:'next',
+      name:'level-'+n,
+      beforeAd:function(){ paused=true; },
+      afterAd:function(){ paused=false; }
+    });
+     }
 }
 function toMenu(){
   if(winTimer){clearTimeout(winTimer);winTimer=0;}
